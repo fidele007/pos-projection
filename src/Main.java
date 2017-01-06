@@ -10,59 +10,14 @@ import java.util.HashMap;
 import java.util.regex.Matcher;
 
 public class Main {
-	private static String ENG_TEXT_FILE = "train.eng.tok.txt";
-	private static String MLG_TEXT_FILE = "train.mlg.tok.txt";
-
+	// Sentence by sentence alignment file
 	private static String MLG_ENG_ALIGNMENT_FILE = "mlg-eng.txt";
+	// Tagged source language file
 	private static String ENG_TAGGED_FILE = "train.eng.best-pos.txt";
-//	private static String MLG_ENG_ALIGNMENT_FILE = "test.mlg-eng.txt";
-//	private static String ENG_TAGGED_FILE = "test.eng.pos.txt";
-	
+	// Output tagged target language file
 	private static String OUTPUT_FILE = "train.mlg.tagged.txt";
 	
-	public static void endLines(String file) throws IOException {
-		BufferedReader reader = new BufferedReader(new FileReader(file));
-		String eachLine;
-		File fout = new File(file + ".ended");
-		FileOutputStream fos = new FileOutputStream(fout);
-		BufferedWriter bw = new BufferedWriter (new OutputStreamWriter(fos));
-		System.out.println("Ending each line in file: " + file + " > " + fout.getName());
-		while ((eachLine = reader.readLine()) != null) {
-			if (!eachLine.endsWith(".")
-					&& !eachLine.endsWith("!")
-					&& !eachLine.endsWith("?")) {
-				eachLine += ".";
-			}
-			bw.write(eachLine);
-			bw.newLine();
-		}
-		reader.close();
-		bw.close();
-	}
-	
-	public static void normalizeSigns(String file) throws IOException {
-		BufferedReader reader = new BufferedReader(new FileReader(file));
-		String eachLine;
-		File fout = new File(file + ".norm");
-		FileOutputStream fos = new FileOutputStream(fout);
-		BufferedWriter bw = new BufferedWriter (new OutputStreamWriter(fos));
-		System.out.println("Normalizing signs in file: " + file);
-		while ((eachLine = reader.readLine()) != null) {
-			eachLine = eachLine.replaceAll("#\\s+", "#");
-			eachLine = eachLine.replaceAll("@\\s+", "@");
-			eachLine = eachLine.replaceAll("\\s+_\\s+", "_");
-			bw.write(eachLine);
-			bw.newLine();
-		}
-		reader.close();
-		bw.close();
-		System.out.println("Finished normalizing signs to file: " + fout.getAbsolutePath());
-	}
-	
 	public static void main(String[] args) throws IOException {
-//		normalizeSigns(ENG_TEXT_FILE);
-//		normalizeSigns(MLG_TEXT_FILE);
-		
 		BufferedReader alignReader = new BufferedReader(new FileReader(MLG_ENG_ALIGNMENT_FILE));
 		String eachAlignLine;
 		ArrayList<String> alignLines = new ArrayList<String>();
@@ -134,6 +89,7 @@ public class Main {
 		File fout = new File(OUTPUT_FILE);
 		FileOutputStream fos = new FileOutputStream(fout);
 		BufferedWriter bw = new BufferedWriter (new OutputStreamWriter(fos));
+		System.out.println("Tagging target language file...");
 		for (int j = 0; j < newAlignLines.size(); j++) {
 			String taggedSentence = "";
 			for (String eachWordTag : newAlignLines.get(j).split("\\s+")) {
@@ -192,10 +148,10 @@ public class Main {
 				}
 			}
 
-			System.out.println(taggedSentence);
+//			System.out.println(taggedSentence);
 			newAlignLines.set(j, taggedSentence);
 
-			// Write to file
+			// Write each line to file
 			bw.write(taggedSentence);
 			bw.newLine();
 		}
