@@ -146,17 +146,17 @@ public class Main {
 		alignLines = null;
 		
 		// Make a POS map for each tagged sentence (English)
-		HashMap<String, ArrayList<String>> posMap = new HashMap<String, ArrayList<String>>();
+		ArrayList<HashMap<String, ArrayList<String>>> posMapCollection = new ArrayList<HashMap<String, ArrayList<String>>>();
 		BufferedReader posReader = new BufferedReader(new FileReader(sourceLangFile));
 		String line;
 		System.out.println("Generating POS map for source language..."); // English
 		while ((line = posReader.readLine()) != null) {
+			HashMap<String, ArrayList<String>> posMap = new HashMap<String, ArrayList<String>>();
 			for (String eachWord : line.split("\\s+")) {
 				int tagSepIndex = eachWord.lastIndexOf('_');
 				if (tagSepIndex == -1
 						|| eachWord.substring(0, tagSepIndex).trim().isEmpty()
-						|| eachWord.substring(tagSepIndex).trim().isEmpty()
-						) {
+						|| eachWord.substring(tagSepIndex).trim().isEmpty()) {
 					continue;
 				}
 				String[] wordPOS = {eachWord.substring(0, tagSepIndex), eachWord.substring(tagSepIndex + 1)};
@@ -172,9 +172,17 @@ public class Main {
 				newValues.add(wordPOS[1]);
 				posMap.put(wordPOS[0], newValues);
 			}
+			posMapCollection.add(posMap);
 		}
 		posReader.close();
 
+		// Check number of lines
+		if (newAlignLines.size() != posMapCollection.size()) {
+			System.out.println("The number of lines in sentence alignment file and source language file are different.");
+			System.out.println(newAlignLines.size() + " != " + posMapCollection.size());
+			return;
+		}
+		
 		// Replace matched token with its POS
 		File fout = new File(outputFile);
 		FileOutputStream fos = new FileOutputStream(fout);
@@ -203,7 +211,7 @@ public class Main {
 				}
 
 				// Get POS only for the first matching token
-				ArrayList<String> newPOSValues = posMap.get(firstMatchingToken);
+				ArrayList<String> newPOSValues = posMapCollection.get(j).get(firstMatchingToken);
 				// If no matching POS is found for the matching token, append only the token
 				if (newPOSValues == null || newPOSValues.size() == 0) {
 					if (taggedSentence == "") {
@@ -221,20 +229,16 @@ public class Main {
 				}
 
 				// Remove the first POS of every matching token
-				if (matchingTokens.length == 0) {
-					ArrayList<String> newPOSArray = posMap.get(firstMatchingToken);
-					if (newPOSArray != null) {
-						newPOSArray.remove(0);
-						posMap.put(firstMatchingToken, newPOSArray);
-					}
-				} else {
-					for (String eachMatchedToken : matchingTokens) {
-						ArrayList<String> newPOSArray = posMap.get(eachMatchedToken);
+				if (matchingTokens.length > 1) {
+					HashMap<String, ArrayList<String>> newPOSMap = posMapCollection.get(j);
+					for (String eachMatchingToken : matchingTokens) {
+						ArrayList<String> newPOSArray = newPOSMap.get(eachMatchingToken);
 						if (newPOSArray != null && newPOSArray.size() > 0) {
 							newPOSArray.remove(0);
-							posMap.put(eachMatchedToken, newPOSArray);
+							newPOSMap.put(eachMatchingToken, newPOSArray);
 						}
 					}
+					posMapCollection.set(j, newPOSMap);
 				}
 			}
 
@@ -336,8 +340,8 @@ public class Main {
 	}
 
 	public static void main(String[] args) throws IOException {
-		doPOSProjection(MLG_ENG_ALIGNMENT_FILE, ENG_TAGGED_FILE, OUTPUT_FILE);
-		printIncorrectTags(OUTPUT_FILE);
+//		doPOSProjection(MLG_ENG_ALIGNMENT_FILE, ENG_TAGGED_FILE, OUTPUT_FILE);
+//		printIncorrectTags(OUTPUT_FILE);
 
 //		doPOSProjection("test.mlg-eng.txt", "corpus.eng.tagged.txt", "test.mlg.tagged.txt");
 //		printIncorrectTags("test.mlg.tagged.txt");
@@ -348,7 +352,7 @@ public class Main {
 //			makeDataset(converted, "dataset-" + eachFile);
 //		}
 
-//		String convertedPro = convertTagsToUniversal(OUTPUT_FILE);
-//		makeDataset(convertedPro, "dataset-all-projected.txt");
+		String convertedPro = convertTagsToUniversal(OUTPUT_FILE);
+		makeDataset(convertedPro, "dataset-all-projected.txt");
 	}
 }
