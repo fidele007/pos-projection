@@ -19,8 +19,17 @@ public class Main {
 	// Output tagged target language file
 	private static String OUTPUT_FILE = "corpus.mlg.tagged.txt";
 	
+	// Malagasy and English POS tags
+	private static String[] tagset = {",", ":", ".", "...", "\"", "@-@", "ADJ", "ADV", "C", "CONJ",
+			"DT", "FOC", "-LRB-", "N", "NEG", "PCL", "PN", "PREP", "PRO", "-RRB-", "T", "V", "X",
+			"#", "$", "AFX", "CC", "CD", "EX", "FW", "HYPH", "IN", "JJ", "JJR", "JJS", "LS", "MD",
+			"NIL", "NN", "NNP", "NNPS", "NNS", "PDT", "POS", "PRP", "PRP$", "RB", "RBR", "RBS",
+			"RP", "SYM", "TO", "UH", "VB", "VBD", "VBG", "VBN", "VBP", "VBZ", "WDT", "WP", "WP$",
+			"WRB", "``", "''"};
+
 	// Hashmap for converting POS tags to universal POS tags
 	private static HashMap<String, String> posTagMap = new HashMap<String, String>() {{
+		// Malagasy -> Universal
 		put(",", ".");
 		put(":", ".");
 		put(".", ".");
@@ -44,9 +53,52 @@ public class Main {
 		put("T", "VERB");
 		put("V", "VERB");
 		put("X", "X");
+		// Penn Treebank -> Universal
+		put("#", "PRT"); // SYM: To find (Symbol)
+		put("$", "PRT"); // SYM: To find (Symbol)
+		put("AFX", "ADJ");
+		put("CC", "CONJ");
+		put("CD", "NUM");
+		put("EX", "ADV");
+		put("FW", "X");
+		put("HYPH", ".");
+		put("IN", "ADP");
+		put("JJ", "ADJ");
+		put("JJR", "ADJ");
+		put("JJS", "ADJ");
+		put("LS", ".");
+		put("MD", "VERB");
+		put("NIL", "X");
+		put("NN", "NOUN");
+		put("NNP", "NOUN");
+		put("NNPS", "NOUN");
+		put("NNS", "NOUN");
+		put("PDT", "DET");
+		put("POS", "PRT");
+		put("PRP", "PRON");
+		put("PRP$", "DET");
+		put("RB", "ADV");
+		put("RBR", "ADV");
+		put("RBS", "ADV");
+		put("RP", "PRT");
+		put("SYM", "X"); // SYM: to find
+		put("TO", "PRT");
+		put("UH", "ADV");
+		put("VB", "VERB");
+		put("VBD", "VERB");
+		put("VBG", "VERB");
+		put("VBN", "VERB");
+		put("VBP", "VERB");
+		put("VBZ", "VERB");
+		put("WDT", "DET");
+		put("WP", "PRON");
+		put("WP$", "DET");
+		put("WRB", "ADV");
+		put("``", ".");
+		put("''", ".");
 	}};
 	
-	public static void doPOSProjection(String alignmentFile, String sourceLangFile) throws IOException {
+	public static void doPOSProjection(String alignmentFile, String sourceLangFile, String outputFile) throws IOException {
 		BufferedReader alignReader = new BufferedReader(new FileReader(alignmentFile));
 		String eachAlignLine;
 		ArrayList<String> alignLines = new ArrayList<String>();
@@ -77,15 +129,16 @@ public class Main {
 				alignSentence = alignSentence.replaceAll("\\(\\{\\s+([^})]+)\\s+\\}\\)", "\\(\\{$1\\}\\)");
 				// Replace white spaces inside ({..}) with the character |
 				alignSentence = alignSentence.replaceAll("\\s+(?=[^()]*\\}\\))", "\\|");
-				// Replace ({ with _ and remove })
-				alignSentence = alignSentence.replaceAll("\\s+\\(\\{([^})]*)\\}\\)", "_$1");
+				// Replace ({ with |_ and remove })
+				alignSentence = alignSentence.replaceAll("\\s+\\(\\{([^})]*)\\}\\)", "\\|_$1");
 				
 				// Replace matching token positions with actual matching tokens
 				for (int j = 1; j < sentenceArray.length + 1; j++) {
-					alignSentence = alignSentence.replaceAll("_" + Integer.toString(j) + "\\b", "_" + Matcher.quoteReplacement(sentenceArray[j-1]));
+					alignSentence = alignSentence.replaceAll("\\|_" + Integer.toString(j) + "\\b", "\\|_" + Matcher.quoteReplacement(sentenceArray[j-1]));
 					alignSentence = alignSentence.replaceAll("\\|" + Integer.toString(j) + "\\|", "\\|" + Matcher.quoteReplacement(sentenceArray[j-1]) + "\\|");
 					alignSentence = alignSentence.replaceAll("\\|" + Integer.toString(j) + " ", "\\|" + Matcher.quoteReplacement(sentenceArray[j-1]) + " ");
-				}				
+				}
+//				System.out.println(alignSentence);
 				newAlignLines.add(alignSentence);
 			}
 		}
@@ -99,7 +152,15 @@ public class Main {
 		System.out.println("Generating POS map for source language..."); // English
 		while ((line = posReader.readLine()) != null) {
 			for (String eachWord : line.split("\\s+")) {
-				String[] wordPOS = eachWord.split("_");
+				int tagSepIndex = eachWord.lastIndexOf('_');
+				if (tagSepIndex == -1
+						|| eachWord.substring(0, tagSepIndex).trim().isEmpty()
+						|| eachWord.substring(tagSepIndex).trim().isEmpty()
+						) {
+					continue;
+				}
+				String[] wordPOS = {eachWord.substring(0, tagSepIndex), eachWord.substring(tagSepIndex + 1)};
+//				String[] wordPOS = eachWord.split("_");
 				if (wordPOS.length < 2) {
 					continue;
 				}
@@ -115,14 +176,14 @@ public class Main {
 		posReader.close();
 
 		// Replace matched token with its POS
-		File fout = new File(OUTPUT_FILE);
+		File fout = new File(outputFile);
 		FileOutputStream fos = new FileOutputStream(fout);
 		BufferedWriter bw = new BufferedWriter (new OutputStreamWriter(fos));
 		System.out.println("Tagging target language file...");
 		for (int j = 0; j < newAlignLines.size(); j++) {
 			String taggedSentence = "";
 			for (String eachWordTag : newAlignLines.get(j).split("\\s+")) {
-				String[] tokenMatchingTokens = eachWordTag.split("_");
+				String[] tokenMatchingTokens = eachWordTag.split("\\|_");
 				// If no POS is found for the token
 				if (tokenMatchingTokens.length < 2) {
 					if (taggedSentence == "") {
@@ -189,11 +250,14 @@ public class Main {
 		System.out.println("Wrote tagged text file to: " + fout.getAbsolutePath());
 	}
 	
-	// Convert current POS tags to universal POS tags
+	/* Convert current POS tags to universal POS tags
+	 * This assumes that your tag separator is the character "|"
+	 */
 	public static String convertTagsToUniversal(String fileName) throws IOException {
 		String output = "";
 		BufferedReader reader = new BufferedReader(new FileReader(fileName));
 		String line;
+		System.out.println("Converting tags..");
 		while ((line = reader.readLine()) != null) {
 			Pattern pattern = Pattern.compile("\\|([^|_\\s]+)");
 			Matcher matcher = pattern.matcher(line);
@@ -201,6 +265,7 @@ public class Main {
 				line = matcher.replaceFirst("\\|_" + posTagMap.getOrDefault(matcher.group(1), matcher.group(1)));
 				matcher = pattern.matcher(line);
 			}
+
 			output += line.replaceAll("([^\\s])\\|_([^|\\s])", "$1|$2");
 			// Add new line only if current line has text
 			if (line.trim().length() > 0) {
@@ -208,6 +273,7 @@ public class Main {
 			}
 		}
 		reader.close();
+		System.out.println("Finished tag conversion.");
 		return output;
 	}
 	
@@ -229,10 +295,11 @@ public class Main {
 			String[] wordTagPairs = line.split("\\s+");
 			for (String eachWordTagPair : wordTagPairs) {
 				String[] wordTagPair = eachWordTagPair.split("\\|");
-				sentence += wordTagPair[0] + " ";
 				if (wordTagPair.length > 1) {
+					sentence += wordTagPair[0] + " ";
 					tagSentence += wordTagPair[1] + " ";
 				} else {
+					sentence += eachWordTagPair + " ";
 					tagSentence += "X ";
 				}
 			}
@@ -245,13 +312,43 @@ public class Main {
 		System.out.println("Finished making dataset. Output to: " + fout.getAbsolutePath());
 	}
 	
-	public static void main(String[] args) throws IOException {
-//		doPOSProjection(MLG_ENG_ALIGNMENT_FILE, ENG_TAGGED_FILE);
-
-		String[] mlgFiles = {"gold.txt", "test.txt"};
-		for (String eachFile : mlgFiles) {
-			String converted = convertTagsToUniversal(eachFile);
-			makeDataset(converted, "dataset-" + eachFile);
+	public static void printIncorrectTags(String fileName) throws IOException {
+		BufferedReader reader = new BufferedReader(new FileReader(fileName));
+		String line;
+		while ((line = reader.readLine()) != null) {
+			String[] wordTagPairs = line.split("\\s+");
+			for (String eachWordTagPair : wordTagPairs) {
+				int tagSepIndex = eachWordTagPair.lastIndexOf('|');
+				if (tagSepIndex == -1
+						|| eachWordTagPair.substring(0, tagSepIndex).trim().isEmpty()
+						|| eachWordTagPair.substring(tagSepIndex + 1).trim().isEmpty()) {
+					continue;
+				}
+				String[] wordTagPair = {eachWordTagPair.substring(0, tagSepIndex), eachWordTagPair.substring(tagSepIndex + 1)};
+				if (wordTagPair.length > 1 && posTagMap.get(wordTagPair[1]) == null) {
+					System.out.println("Incorrect tag: " + wordTagPair[1]);
+					System.out.println(line);
+				}
+			}
 		}
+		System.out.print("Finished finding incorrect tags.");
+		reader.close();
+	}
+
+	public static void main(String[] args) throws IOException {
+		doPOSProjection(MLG_ENG_ALIGNMENT_FILE, ENG_TAGGED_FILE, OUTPUT_FILE);
+		printIncorrectTags(OUTPUT_FILE);
+
+//		doPOSProjection("test.mlg-eng.txt", "corpus.eng.tagged.txt", "test.mlg.tagged.txt");
+//		printIncorrectTags("test.mlg.tagged.txt");
+
+//		String[] mlgFiles = {"gold.txt", "test.txt"};
+//		for (String eachFile : mlgFiles) {
+//			String converted = convertTagsToUniversal(eachFile);
+//			makeDataset(converted, "dataset-" + eachFile);
+//		}
+
+//		String convertedPro = convertTagsToUniversal(OUTPUT_FILE);
+//		makeDataset(convertedPro, "dataset-all-projected.txt");
 	}
 }
