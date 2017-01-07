@@ -5,20 +5,49 @@ import java.io.FileOutputStream;
 import java.io.FileReader;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
+import java.io.StringReader;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 public class Main {
 	// Sentence by sentence alignment file
 	private static String MLG_ENG_ALIGNMENT_FILE = "mlg-eng.txt";
 	// Tagged source language file
-	private static String ENG_TAGGED_FILE = "train.eng.best-pos.txt";
+	private static String ENG_TAGGED_FILE = "corpus.eng.tagged.txt";
 	// Output tagged target language file
-	private static String OUTPUT_FILE = "train.mlg.tagged.txt";
+	private static String OUTPUT_FILE = "corpus.mlg.tagged.txt";
 	
-	public static void main(String[] args) throws IOException {
-		BufferedReader alignReader = new BufferedReader(new FileReader(MLG_ENG_ALIGNMENT_FILE));
+	// Hashmap for converting POS tags to universal POS tags
+	private static HashMap<String, String> posTagMap = new HashMap<String, String>() {{
+		put(",", ".");
+		put(":", ".");
+		put(".", ".");
+		put("...", ".");
+		put("\"", ".");
+		put("@-@", ".");
+		put("ADJ", "ADJ");
+		put("ADV", "ADV");
+		put("C", "CONJ");
+		put("CONJ", "CONJ");
+		put("DT", "DET");
+		put("FOC", "DET");
+		put("-LRB-", ".");
+		put("N", "NOUN");
+		put("NEG", "ADV");
+		put("PCL", "PRT");
+		put("PN", "NOUN");
+		put("PREP", "ADP");
+		put("PRO", "PRON");
+		put("-RRB-", ".");
+		put("T", "VERB");
+		put("V", "VERB");
+		put("X", "X");
+	}};
+	
+	public static void doPOSProjection(String alignmentFile, String sourceLangFile) throws IOException {
+		BufferedReader alignReader = new BufferedReader(new FileReader(alignmentFile));
 		String eachAlignLine;
 		ArrayList<String> alignLines = new ArrayList<String>();
 		// Store all alignment lines into an array (except the # Sentence pair lines)
@@ -65,7 +94,7 @@ public class Main {
 		
 		// Make a POS map for each tagged sentence (English)
 		HashMap<String, ArrayList<String>> posMap = new HashMap<String, ArrayList<String>>();
-		BufferedReader posReader = new BufferedReader(new FileReader(ENG_TAGGED_FILE));
+		BufferedReader posReader = new BufferedReader(new FileReader(sourceLangFile));
 		String line;
 		System.out.println("Generating POS map for source language..."); // English
 		while ((line = posReader.readLine()) != null) {
@@ -125,9 +154,9 @@ public class Main {
 				}
 				// If matching POS for matching token found, append the token + the first POS of the matching token
 				if (taggedSentence == "") {
-					taggedSentence = tokenMatchingTokens[0] + "_" + newPOSValues.get(0);
+					taggedSentence = tokenMatchingTokens[0] + "|" + newPOSValues.get(0);
 				} else {
-					taggedSentence += " " + tokenMatchingTokens[0] + "_" + newPOSValues.get(0);
+					taggedSentence += " " + tokenMatchingTokens[0] + "|" + newPOSValues.get(0);
 				}
 
 				// Remove the first POS of every matching token
@@ -158,5 +187,71 @@ public class Main {
 
 		bw.close();
 		System.out.println("Wrote tagged text file to: " + fout.getAbsolutePath());
+	}
+	
+	// Convert current POS tags to universal POS tags
+	public static String convertTagsToUniversal(String fileName) throws IOException {
+		String output = "";
+		BufferedReader reader = new BufferedReader(new FileReader(fileName));
+		String line;
+		while ((line = reader.readLine()) != null) {
+			Pattern pattern = Pattern.compile("\\|([^|\\s]+)");
+			Matcher matcher = pattern.matcher(line);
+			while (matcher.find()) {
+				line = matcher.replaceFirst("_" + posTagMap.getOrDefault(matcher.group(1), matcher.group(1)));
+				matcher = pattern.matcher(line);
+			}
+			output += line.replaceAll("([^|\\s])_([^|\\s])", "$1|$2");
+			// Add new line only if current line has text
+			if (line.trim().length() > 0) {
+				output += "\n";
+			}
+		}
+		reader.close();
+		return output;
+	}
+	
+	/* Convert current input into a dataset for model training
+	 * Dataset has the form of:
+	 * tok_1 tok_2 ||| tag_1 tag_2
+	 */
+	public static void makeDataset(String input, String output) throws IOException {
+		File fout = new File(output);
+		FileOutputStream fos = new FileOutputStream(fout);
+		BufferedWriter bw = new BufferedWriter (new OutputStreamWriter(fos));
+		
+		BufferedReader reader = new BufferedReader(new StringReader(input));
+		String line;
+		System.out.println("Formatting and making dataset...");
+		while ((line = reader.readLine()) != null) {
+			String sentence = "";
+			String tagSentence = "";
+			String[] wordTagPairs = line.split("\\s+");
+			for (String eachWordTagPair : wordTagPairs) {
+				String[] wordTagPair = eachWordTagPair.split("\\|");
+				sentence += wordTagPair[0] + " ";
+				if (wordTagPair.length > 1) {
+					tagSentence += wordTagPair[1] + " ";
+				} else {
+					tagSentence += "X ";
+				}
+			}
+			sentence = sentence.trim();
+			tagSentence = tagSentence.trim();
+			bw.write(sentence + " ||| " + tagSentence);
+			bw.newLine();
+		}
+		bw.close();
+		System.out.println("Finished making dataset. Output to: " + fout.getAbsolutePath());
+	}
+	
+	public static void main(String[] args) throws IOException {
+//		doPOSProjection(MLG_ENG_ALIGNMENT_FILE, ENG_TAGGED_FILE);
+
+		String[] mlgFiles = {"gold.txt", "dev.txt", "test.txt"};
+		for (String eachFile : mlgFiles) {
+			String converted = convertTagsToUniversal(eachFile);
+			makeDataset(converted, "dataset-" + eachFile);
+		}
 	}
 }
