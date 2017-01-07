@@ -195,13 +195,13 @@ public class Main {
 		BufferedReader reader = new BufferedReader(new FileReader(fileName));
 		String line;
 		while ((line = reader.readLine()) != null) {
-			Pattern pattern = Pattern.compile("\\|([^|\\s]+)");
+			Pattern pattern = Pattern.compile("\\|([^|_\\s]+)");
 			Matcher matcher = pattern.matcher(line);
 			while (matcher.find()) {
-				line = matcher.replaceFirst("_" + posTagMap.getOrDefault(matcher.group(1), matcher.group(1)));
+				line = matcher.replaceFirst("\\|_" + posTagMap.getOrDefault(matcher.group(1), matcher.group(1)));
 				matcher = pattern.matcher(line);
 			}
-			output += line.replaceAll("([^|\\s])_([^|\\s])", "$1|$2");
+			output += line.replaceAll("([^\\s])\\|_([^|\\s])", "$1|$2");
 			// Add new line only if current line has text
 			if (line.trim().length() > 0) {
 				output += "\n";
@@ -248,7 +248,7 @@ public class Main {
 	public static void main(String[] args) throws IOException {
 //		doPOSProjection(MLG_ENG_ALIGNMENT_FILE, ENG_TAGGED_FILE);
 
-		String[] mlgFiles = {"gold.txt", "dev.txt", "test.txt"};
+		String[] mlgFiles = {"gold.txt", "test.txt"};
 		for (String eachFile : mlgFiles) {
 			String converted = convertTagsToUniversal(eachFile);
 			makeDataset(converted, "dataset-" + eachFile);
