@@ -21,7 +21,7 @@ Izay|PRO no|FOC hafatrafatro|N
 Eny|ADV e|PCL !|.
 Ampy|ADJ izay|PRO .|.
 Tongava|V soa|ADV aman|PREP @-@|@-@ tsara|ADJ !|.
-Rado|PN ,|, janoary|PN 1966|PN
+Rado|PN ,|, janoary|PN 1966|NUM
 Mandria|V am|PREP @-@|@-@ piadanana|N ,|, Rado|PN .|.
 Nepal|PN @:|: mandray|V an|PREP @-@|@-@ tanana|N ny|DT olana|N amin'|PREP ny|DT fiovan'|N ny|DT toetr'|N andro|N
 Resaka|N mahoraka|ADJ any|PREP Népal|PN ankehitriny|ADV ny|DT olana|N momba|PREP ny|DT fiovan'|N ny|DT toetr'|N andro|N ,|, na|CONJ dia|CONJ mampiseho|V aza|CONJ ny|DT fanadihadihana|N fa|C olona|N marobe|ADJ any|ADV an|PREP @-@|@-@ toerana|N no|FOC mosarena|ADJ vokatry|N ny|DT haintany|N miseho|V matetika|ADV ,|, dia|PCL loza|N mitatao|V ho|PREP an|PREP @-@|@-@ dry|DT zareo|PRO koa|ADV ny|DT fitsoniky|N ny|DT ranomandry|N .|.
@@ -31,7 +31,7 @@ Chandan|PN Sapkota|PN ,|, mpiasa|N ao|ADV amin'|PREP ny|DT Fondation|PN Carnegie
 “|" Tara|ADJ ny|DT rivotra|N mousson|N ka|CONJ mampihena|V ny|DT vokatra|N ,|, izay|C andry|V iankinan'|V ny|DT ekonomia|N any|ADV an|PREP @-@|@-@ toerana|N ,|, ary|CONJ mponina|N maherin'|ADJ ny|DT 70|NUM %|ADJ no|FOC mivelona|V aminy|PREP .|.
 Misy|V fiantraikany|N be|ADJ koa|ADV io|DT amin'|PREP ny|DT tahan'|N ny|DT fitomboana|N sy|CONJ ny|DT fidiram|N @-@|@-@ bolan'|N ny|DT tsirairay|ADV ”|"
 Nepal|PN -|@-@ Tampon'|PN ny|PN Nosy|PN -LRB-|-LRB- Imja|PN Tse|PN -RRB-|-RRB- -|@-@ Sarin|N @-@|@-@ dranomandry|N an|PREP @-@|@-@ tampon|N @-@|@-@ tendrombohitra|N ,|, Saripikan'|N ny|DT mampiasa|V Flickr|PN mckaysavage|PN
-http://www.flickr.com/photos/mckaysavage|PN /|PN /|PN CC|PN BY|PN 2.0|PN
+http://www.flickr.com/photos/mckaysavage|PN /|PN /|PN CC|PN BY|PN 2.0|NUM
 Misy|V vokany|N lehibe|ADJ koa|ADV ny|DT fiovan'|N ny|DT toetr'|N andro|N amin'|PREP ny|DT tehezan|N @-@|@-@ tendrombohitra|N Himalaya|PN ,|, izay|C mbola|ADV tsy|NEG mihetsika|V aloha|ADV hatramin'|ADV izao|ADV ,|, hatrany|ADV amin'|PREP ny|DT tany|N manodidina|V .|.
 Ao|ADV amin'|PREP ny|DT Pamil|PN Visions|PN kosa|ADV i|DT Phil|PN Butler|PN ni|T milaza|V ireo|PREP loza|N ateraky|V ny|DT fitsoniky|N ny|DT ranomandry|N amin'|PREP ny|DT tendrombohitra|N Himalaya|PN .|.
 Araka|PREP ny|DT sary|N avy|V amin'|PREP ny|DT zana|N @-@|@-@ bolana|N no|FOC nanaovany|V fanadihadihana|N lalina|ADJ mikasika|V ireo|DT ranomandry|N tandindonin|V @-@|@-@ doza|N sy|CONJ ny|DT fitaran'|N ny|DT haben'|N ireo|DT dobo|N avy|V amin'|PREP ny|DT ranomandry|N hanehoana|V ny|DT mahamaika|V ny|DT famonjena|N ny|DT tontolo|ADJ iainana|V .|.
