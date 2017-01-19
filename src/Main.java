@@ -543,9 +543,15 @@ public class Main {
 	}
 
 	public static void main(String[] args) throws IOException {
+		String[] goldDataArray = {"gold.txt", "test.txt"};
+		for (String file : goldDataArray) {
+			convertTagsToUniversal(file, "universal-" + file);
+			makeDataset("universal-" + file, "dataset-" + file);
+		}
+
 		doPOSProjection(MLG_ENG_ALIGNMENT_FILE, ENG_TAGGED_FILE, OUTPUT_FILE);
 		convertTagsToUniversal(OUTPUT_FILE, "universal-" + OUTPUT_FILE);
 		filterProjectedData("universal-" + OUTPUT_FILE, "filtered-universal-" + OUTPUT_FILE);
-		makeDataset("filtered-universal-" + OUTPUT_FILE, "dataset-" + OUTPUT_FILE);
+		makeDataset("filtered-universal-" + OUTPUT_FILE, "dataset-full-" + OUTPUT_FILE);
 	}
 }
